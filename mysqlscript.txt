@@ -1,0 +1,23 @@
+CREATE DATABASE amazon;
+USE amazon;
+
+CREATE TABLE productinfo (
+  id integer PRIMARY KEY AUTO_INCREMENT,
+  name text,
+  dataasin varchar(15),
+  price float,
+  numreview int,
+  review float,
+  sales int,
+  keywords varchar(255) NOT NULL,
+  href text NOT NULL,
+  descriptions text,
+  features LONGTEXT,
+  created TIMESTAMP NOT NULL DEFAULT NOW()
+);
+CREATE TABLE keywords(
+  id integer PRIMARY KEY AUTO_INCREMENT,
+  content varchar(255) NOT NULL
+);
+
+SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
