@@ -35,7 +35,7 @@ puppeteer.use(AdblockerPlugin({ blockTrackers: true }))
 //That's it, the rest is puppeteer usage as normal 😊
 async function getCookies(){
   var cookies;
-  await puppeteer.launch({ headless: process.env.NODE_ENV === 'prod' }).then(async browser => {
+  await puppeteer.launch({ headless: process.env.NODE_ENV === 'prod'}).then(async browser => {
     const page = await browser.newPage()
     await page.setViewport({ width: 800, height: 600 })
   
@@ -81,15 +81,35 @@ async function scrapeIndividual(href,cookies) {
   return features, '';
 }
 
-async function test(key){
+async function test(key, cookies){
+  const objcookies = cookies.split('; ').map(res => res.split(/=(.*)/s).slice(0,2)).map(([name, value]) => ({ name: name, value:value, domain: '.amazon.com', sourceScheme: 'Secure',  sourcePort: 443, httpOnly: false}));
+  console.log(objcookies);
   await puppeteer.launch({ headless: process.env.NODE_ENV === 'prod' }).then(async browser => {
     const page = await browser.newPage()
     await page.setViewport({ width: 800, height: 600 })
   
     console.log(`Testing adblocker plugin..`)
+    await page.setCookie(...objcookies);
     await page.goto('https://www.amazon.com')
+    const cc = await page.cookies();
+    console.log(cc);
     await page.waitForTimeout(1123)
-    await page.waitForSelector('#twotabsearchtextbox')
+    try{
+      await page.waitForSelector('#twotabsearchtextbox');
+    }
+    catch(e){
+      console.log(e);
+      const cookies = _.join(
+                        _.map(
+                          await page.cookies(),
+                          ({ name, value }) => _.join([name, value], '='),
+                        ),
+                        '; ',
+                      )
+      
+      
+              
+    }
     await page.type('#twotabsearchtextbox', key)
     await page.waitForTimeout(1040);
     await page.keyboard.press('Enter');
